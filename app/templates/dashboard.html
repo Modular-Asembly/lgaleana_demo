@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .section { margin-bottom: 2rem; }
+        .section h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    
+    <div class="section">
+        <h2>Shopify Data</h2>
+        {% if data.shopify_data and data.shopify_data|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in data.shopify_data %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.data | safe }}</td>
+                        <td>{{ item.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No Shopify data available.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>Google Ads Data</h2>
+        {% if data.google_ads_data and data.google_ads_data|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in data.google_ads_data %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.data | safe }}</td>
+                        <td>{{ item.created_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No Google Ads data available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
