@@ -31,6 +31,242 @@
       "files": [],
       "update_status": "to_update",
       "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "infrastructure",
+        "name": "Cloud SQL Database",
+        "details": ""
+      },
+      "files": [],
+      "update_status": "up_to_date",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "SQL adaptor",
+        "details": "Defines the classic FastAPI SQL utility.\n\nConnects to a database.\nDefines Base.\nDefines a method that returns sessions. This method is used by the FastAPI endpoints.",
+        "env_variables": [
+          "DB_URL"
+        ],
+        "packages": [
+          "psycopg2-binary==2.9.10",
+          "sqlalchemy==2.0.36"
+        ],
+        "dependencies": []
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "infrastructure",
+        "name": "Cloud Scheduler Job",
+        "details": ""
+      },
+      "files": [],
+      "update_status": "up_to_date",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "datamodel",
+        "name": "ShopifyData",
+        "details": "A SQLAlchemy model representing sdata pulled from Shopify. Fields include 'id' as primary key (Integer), 'data' as JSON/text field holding the raw data from Shopify, and 'created_at' as a DateTime field indicating when the data was fetched.",
+        "dependencies": [],
+        "packages": [
+          "psycopg2-binary==2.9.10",
+          "sqlalchemy==2.0.36"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "endpoint",
+        "name": "pull shopify data",
+        "details": "Implements an endpoint that, when triggered (ideally via a scheduled Cloud Scheduler job), calls the Shopify data service to pull the latest sdata from Shopify and saves it to the ShopifyData table using session management from the SQL adaptor. It no longer contains direct logic for API calls, delegating that to the Shopify data service module.",
+        "env_variables": [
+          "DB_URL"
+        ],
+        "packages": [
+          "requests==2.31.0"
+        ],
+        "dependencies": [
+          "SQL adaptor",
+          "ShopifyData",
+          "Shopify data service"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "datamodel",
+        "name": "GoogleAdsData",
+        "details": "A SQLAlchemy model representing data pulled from Google Ads. It includes fields such as 'id' (Integer, primary key), 'data' (JSON or text field holding the raw data from Google Ads), and 'created_at' (DateTime field indicating when the data was fetched).",
+        "dependencies": [],
+        "packages": [
+          "psycopg2-binary==2.9.10",
+          "sqlalchemy==2.0.36"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "endpoint",
+        "name": "pull google ads data",
+        "details": "Implements an endpoint that, when triggered (ideally via a scheduled Cloud Scheduler job), calls the Google ads service to pull the latest data from Google Ads and saves it into the GoogleAdsData table using session management from the SQL adaptor. The direct interaction with the Google Ads API is now encapsulated within the Google ads service module.",
+        "env_variables": [
+          "DB_URL"
+        ],
+        "packages": [
+          "google-ads==18.0.0"
+        ],
+        "dependencies": [
+          "SQL adaptor",
+          "GoogleAdsData",
+          "Google ads service"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "endpoint",
+        "name": "dashboard",
+        "details": "Implements an endpoint that retrieves aggregated data for display on a dashboard. It now calls the Dashboard service to fetch data from both ShopifyData and GoogleAdsData tables. The endpoint passes the processed data to a Jinja2 template for rendering. This refactoring separates data retrieval and business logic from request handling.",
+        "env_variables": [
+          "DB_URL"
+        ],
+        "packages": [
+          "jinja2==3.1.2"
+        ],
+        "dependencies": [
+          "SQL adaptor",
+          "Dashboard service"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "view",
+        "name": "dashboard view",
+        "details": "A Jinja2 template that displays data fetched from both ShopifyData and GoogleAdsData tables. The template organizes the data into separate sections for each data source and includes time stamps and other key data fields.",
+        "packages": [
+          "jinja2==3.1.2"
+        ],
+        "endpoint": "dashboard"
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "Shopify data service",
+        "details": "Provides business logic for pulling sdata from Shopify. Now it delegates low-level API interactions to the Shopify API client module. This module calls functions provided by the Shopify API client to get raw data, processes the response, and prepares it for persistence in the ShopifyData table.",
+        "env_variables": [
+          "SHOPIFY_API_KEY",
+          "SHOPIFY_PASSWORD",
+          "SHOPIFY_STORE_URL"
+        ],
+        "packages": [
+          "requests==2.31.0"
+        ],
+        "dependencies": [
+          "Shopify API client"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "Google ads service",
+        "details": "Encapsulates the business logic for pulling data from Google Ads. Now it delegates low-level API interactions to the Google Ads API client module. This service is responsible for calling the Google Ads API client to fetch data, processing the retrieved data, and formatting it for database persistence in the GoogleAdsData table.",
+        "env_variables": [
+          "GOOGLE_ADS_CLIENT_ID",
+          "GOOGLE_ADS_CLIENT_SECRET",
+          "GOOGLE_ADS_DEVELOPER_TOKEN",
+          "GOOGLE_ADS_REFRESH_TOKEN"
+        ],
+        "packages": [
+          "google-ads==18.0.0"
+        ],
+        "dependencies": [
+          "Google Ads API client"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "Dashboard service",
+        "details": "Provides business logic to aggregate and process data from both the ShopifyData and GoogleAdsData tables. Contains functions to query the latest entries from each table, format the data, and prepare it for presentation in a dashboard view.",
+        "env_variables": [
+          "DB_URL"
+        ],
+        "packages": [],
+        "dependencies": [
+          "SQL adaptor",
+          "ShopifyData",
+          "GoogleAdsData"
+        ]
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "Shopify API client",
+        "details": "Returns dummy data",
+        "env_variables": [],
+        "packages": [
+          "requests==2.31.0"
+        ],
+        "dependencies": []
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
+    },
+    {
+      "design": {
+        "type": "module",
+        "name": "Google Ads API client",
+        "details": "Returns dummy data",
+        "env_variables": [],
+        "packages": [
+          "google-ads==18.0.0"
+        ],
+        "dependencies": []
+      },
+      "files": [],
+      "update_status": "to_update",
+      "is_deployed": false
     }
   ],
   "github": "https://github.com/Modular-Asembly/lgaleana_demo"
